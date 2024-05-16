@@ -1,6 +1,6 @@
-public class Foe extends Character {
-    public Foe(String name, String race, int level) {
-        super(name, race, level);
+public class Goblin extends Foe{
+    public Goblin(String name, int level) {
+        super(name, "Goblin", level);
     }
 
     @Override
@@ -17,6 +17,11 @@ public class Foe extends Character {
 
     @Override
     public void useSkill(Character opponent) {
-        
+        if (this.currentMP >= 30) {
+            opponent.addStatusEffect(new Poison());
+            this.currentMP -= 30;
+        } else {
+            System.out.println(this.name + " tidak memiliki cukup MP untuk menggunakan skill.");
+        }
     }
 }
