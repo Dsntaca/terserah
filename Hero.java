@@ -1,61 +1,62 @@
-public class Hero extends Character {
-    public Hero(String name, String race, int level) {
-        super(name, race, level);
+public class Hero extends Character implements SkillUser {
+    enum Race {
+        Knight,
+        Archer,
+        Fighter,
+        Fairy
+    }
+
+    private Race race;
+    private Weapon weapon;
+
+    public Hero(int hp, int mp, int level, int attackPower, String name, Race race, Weapon weapon) {
+        super(hp, mp, level, attackPower, name);
+        this.race = race;
+        this.weapon = weapon;
     }
 
     @Override
-    public void attack(Character opponent) {
-        if (this.weapon != null) {
-            if (this.canUseWeapon(this.weapon)) {
-                int damage = this.weapon.getAP();
-                damage -= opponent.armor.getPertahanan();
-                if (damage < 0) damage = 0;
-                opponent.takeDamage(damage);
-            } else {
-                System.out.println(this.name + " tidak bisa menggunakan " + this.weapon.getType());
-            }
-        } else {
-            System.out.println(this.name + " tidak memiliki senjata.");
-        }
+    public void applyStatusEffect(Character target) {
+        // Implement specific status effects in subclasses
     }
 
     @Override
-    public void useSkill(Character opponent) {
-        // Implementation specific to Hero subclasses
-    }
-
-    protected boolean canUseWeapon(Weapon weapon) {
-        switch (this.race) {
-            case "Knight":
-                return weapon.getType().equals("Pedang");
-            case "Archer":
-                return weapon.getType().equals("Panah");
-            case "Fighter":
-                return weapon.getType().equals("Sarung tangan");
-            case "Fairy":
-                return weapon.getType().equals("Magic Wand");
+    public void useSkill(Character target, Skill skill) {
+        switch (skill) {
+            case Weak:
+                target.status.applyWeak();
+                System.out.println(this.getName() + " menggunakan skill Weak pada " + target.getName());
+                break;
+            case Sleep:
+                target.status.applySleep();
+                System.out.println(this.getName() + " menggunakan skill Sleep pada " + target.getName());
+                break;
             default:
-                return false;
+                System.out.println("Skill tidak valid.");
         }
     }
 
-    public void usePotion() {
-        this.currentHP += 100;
-        if (this.currentHP > this.maxHP) this.currentHP = this.maxHP;
-        System.out.println(this.name + " menggunakan Potion dan menaikkan 100 HP. Current HP: " + this.currentHP);
+    public void useItem(Item.ItemType itemType) {
+        Item item = new Item(itemType);
+        item.use(this);
     }
 
-    public void useEther() {
-        this.currentMP += 100;
-        if (this.currentMP > this.maxMP) this.currentMP = this.maxMP;
-        System.out.println(this.name + " menggunakan Ether dan menaikkan 100 MP. Current MP: " + this.currentMP);
+    public void attack(Foe target) {
+        if (this.status.isSleep()) {
+            System.out.println(this.name + " tidak bisa menyerang karena sedang tertidur!");
+            return;
+        }
+
+        int damage = (int) (Math.random() * (this.attackPower + this.weapon.getBonus()));
+        if (status.isWeak()) {
+            damage += damage * 0.5; // Increase damage if Weak
+        }
+        target.hp -= damage;
+        System.out.println(this.name + " menyerang " + target.name + " dengan " + weapon.getName() + " memberikan damage " + damage);
+        if (target.hp < 0) target.hp = 0;
     }
 
-    public void useElixir() {
-        this.currentHP += 150;
-        this.currentMP += 100;
-        if (this.currentHP > this.maxHP) this.currentHP = this.maxHP;
-        if (this.currentMP > this.maxMP) this.currentMP = this.maxMP;
-        System.out.println(this.name + " menggunakan Elixir dan menaikkan 150 HP dan 100 MP. Current HP: " + this.currentHP + ", Current MP: " + this.currentMP);
+    public boolean isAlive() {
+        return this.hp > 0;
     }
 }

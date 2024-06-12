@@ -1,17 +1,26 @@
 public class Weapon {
-    private String type;
-    private int AP;
+    enum Type {
+        Sword,
+        Bow,
+        Gloves,
+        MagicWand
+    }
 
-    public Weapon(String type, int AP) {
+    private Type type;
+    private int bonus;
+    private String name;
+
+    public Weapon(Type type, int bonus) {
         this.type = type;
-        this.AP = AP;
+        this.bonus = bonus;
+        this.name = type.name();
     }
 
-    public String getType() {
-        return this.type;
+    public int getBonus() {
+        return bonus;
     }
 
-    public int getAP() {
-        return this.AP;
+    public String getName() {
+        return name;
     }
 }

@@ -1,90 +1,52 @@
-public abstract class Character {
+public abstract class Character implements StatusEffectApplier {
+    protected int hp, mp, level, attackPower;
     protected String name;
-    protected String race;
-    protected int level;
-    protected int maxHP;
-    protected int maxMP;
-    protected int currentHP;
-    protected int currentMP;
-    protected Weapon weapon;
-    protected Armor armor = new Armor(0);  // Default armor
-    protected IStatusEffect[] statusEffects;
+    protected Status status;
 
-    public Character(String name, String race, int level) {
-        this.name = name;
-        this.race = race;
+    public Character(int hp, int mp, int level, int attackPower, String name) {
+        this.hp = hp;
+        this.mp = mp;
         this.level = level;
-        this.maxHP = level * 100;
-        this.maxMP = level * 50;
-        this.currentHP = this.maxHP;
-        this.currentMP = this.maxMP;
-        this.statusEffects = new IStatusEffect[10];
+        this.attackPower = attackPower;
+        this.name = name;
+        this.status = new Status();
     }
 
-    public void takeDamage(int damage) {
-        for (IStatusEffect effect : statusEffects) {
-            if (effect != null) {
-                damage = effect.modifyDamage(damage);
-            }
+    public void attack(Character target) {
+        int damage = (int) (Math.random() * this.attackPower);
+        if (status.isWeak()) {
+            damage += damage * 0.5; // Increase damage if Weak
         }
-        this.currentHP -= damage;
-        if (this.currentHP < 0) this.currentHP = 0;
-        System.out.println(this.name + " menerima " + damage + " damage. Current HP: " + this.currentHP);
+        target.hp -= damage;
+        System.out.println(this.name + " menyerang " + target.name + " dengan damage " + damage);
+        if (target.hp < 0) target.hp = 0;
     }
 
-    public void addStatusEffect(IStatusEffect effect) {
-        for (int i = 0; i < statusEffects.length; i++) {
-            if (statusEffects[i] == null) {
-                statusEffects[i] = effect;
-                System.out.println(this.name + " terkena status " + effect.getClass().getSimpleName() + ".");
-                break;
-            }
-        }
+    @Override
+    public abstract void applyStatusEffect(Character target);
+
+    public void recover(int amount) {
+        this.mp += amount;
+        System.out.println(this.name + " memulihkan " + amount + " MP");
     }
 
-    public void removeStatusEffect(IStatusEffect effect) {
-        for (int i = 0; i < statusEffects.length; i++) {
-            if (statusEffects[i] == effect) {
-                statusEffects[i] = null;
-                System.out.println(effect.getClass().getSimpleName() + " dihapus dari " + this.name + ".");
-                break;
-            }
-        }
+    public boolean isAlive() {
+        return this.hp > 0;
     }
 
-    public void removeAllStatusEffects() {
-        for (int i = 0; i < statusEffects.length; i++) {
-            statusEffects[i] = null;
-        }
-        System.out.println("semua efek status dihapus dari " + this.name + ".");
+    public void displayStatus() {
+        System.out.println(this.name + " - HP: " + this.hp + ", MP: " + this.mp + ", Level: " + this.level + ", Status: " + this.status.getStatus());
     }
 
-    public void removePoisonStatusEffect() {
-        for (int i = 0; i < statusEffects.length; i++) {
-            if (statusEffects[i] instanceof Poison) {
-                statusEffects[i] = null;
-                System.out.println("Status Poison dihapus dari " + this.name + ".");
-                break;
-            }
-        }
+    public String getName() {
+        return name;
     }
 
-    public void attack(Character opponent) {
-        if (this.weapon != null) {
-            int damage = this.weapon.getAP();
-            damage -= opponent.armor.getPertahanan();
-            if (damage < 0) damage = 0;
-            opponent.takeDamage(damage);
-        } else {
-            System.out.println(this.name + " tidak memiliki senjata. ");
-        }
+    public void increaseHP(int amount) {
+        this.hp += amount;
     }
 
-    public void useSkill(Character opponent) {
-        
-    }
-
-    public void useItem(Item item) {
-        item.apply(this);
+    public void increaseMP(int amount) {
+        this.mp += amount;
     }
 }
